@@ -70,7 +70,7 @@
   <div class="balloons" id="balloons"></div>
   <div class="wrap">
     <div class="card">
-      <h1 class="title"><span class="dot"></span><span id="pageTitle">Message</span></h1>
+      <h1 class="title"><span class="dot"></span><span id="pageTitle">😭</span></h1>
       <div class="count" id="bigCount">—</div>
       <p class="sub" id="smallTimer">—</p>
       <div class="message" id="msg">Have a Happy Life Kuruppe 👻</div>
@@ -99,7 +99,7 @@
     document.body.className = theme.class;
 
     // Page title & message
-    const title = Q.get('title') || '😭';
+    const title = Q.get('title') || 'Message';
     document.getElementById('pageTitle').textContent = title;
 
     const message = (Q.get('msg') || '').replace(/\+/g, ' ') || ' ';
