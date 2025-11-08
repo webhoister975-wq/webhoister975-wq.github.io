@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Countdown Message</title>
+  <title>Days Left</title>
   <style>
     :root {
       --bg: #0f172a;        /* slate-900 */
@@ -99,7 +99,7 @@
     document.body.className = theme.class;
 
     // Page title & message
-    const title = Q.get('title') || 'Message';
+    const title = Q.get('title') || '😭';
     document.getElementById('pageTitle').textContent = title;
 
     const message = (Q.get('msg') || '').replace(/\+/g, ' ') || ' ';
