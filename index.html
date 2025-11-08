@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Countdown Message</title>
+  <style>
+    :root {
+      --bg: #0f172a;        /* slate-900 */
+      --card: #111827;      /* gray-900 */
+      --text: #e5e7eb;      /* gray-200 */
+      --muted: #9ca3af;     /* gray-400 */
+      --accent: #38bdf8;    /* sky-400 */
+      --accent2: #a78bfa;   /* violet-400 */
+      --accent3: #f472b6;   /* pink-400 */
+      --glass: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box }
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial;
+      background: var(--bg);
+      color: var(--text);
+      display:grid; place-items:center; padding:24px; overflow:hidden;
+    }
+    .wrap{ width:min(950px, 96vw); position:relative; z-index:2 }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--glass);
+      border-radius: 22px; padding: 30px; box-shadow: 0 18px 55px rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+    }
+    .title{ display:flex; align-items:center; gap:12px; margin:0 0 10px 0; font-weight:800; letter-spacing:.3px; }
+    .dot{ width:12px; height:12px; border-radius:999px; background: var(--accent); box-shadow:0 0 28px var(--accent); }
+    .count{ font-size: clamp(46px, 10vw, 96px); line-height:1.02; font-weight: 900; margin: 6px 0 6px 0; }
+    .sub{ color: var(--muted); margin: 0 0 18px 0; font-size: clamp(14px, 2.4vw, 16px); }
+    .message{ font-size: clamp(18px, 2.8vw, 20px); line-height:1.6; white-space: pre-wrap; }
+    .meta{ margin-top:20px; color: var(--muted); font-size: 14px; display:flex; gap:12px; flex-wrap:wrap; }
+    .meta code{ background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 8px; }
+    .footer{ margin-top: 18px; color: var(--muted); font-size: 12px; opacity:.9 }
+    .hidden{ display:none }
+    .btn{ display:inline-block; border-radius: 12px; border:1px solid rgba(255,255,255,0.12); padding:10px 14px; text-decoration:none; color:var(--text) }
+
+    /* Floating balloons layer */
+    .balloons{ position: fixed; inset: 0; overflow: hidden; z-index:1; pointer-events:none; }
+    .balloon{
+      position:absolute; bottom:-20vh; width:40px; height:50px; border-radius: 50% 50% 48% 52% / 55% 55% 45% 45%;
+      filter: drop-shadow(0 10px 10px rgba(0,0,0,0.25));
+      animation-name: floatUp; animation-timing-function: linear; animation-iteration-count: 1; opacity: .95;
+    }
+    .balloon:after{ content:""; position:absolute; bottom:-10px; left:50%; transform:translateX(-50%);
+      width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:10px solid currentColor; opacity:.9 }
+    .string{ position:absolute; bottom:-48px; left:50%; transform:translateX(-50%);
+      width:2px; height:48px; background: currentColor; opacity:.4; border-radius: 2px; }
+    @keyframes floatUp {
+      from { transform: translateY(0) translateX(0) rotate(0.5deg); }
+      to   { transform: translateY(-130vh) translateX(var(--drift, 0px)) rotate(-2deg); }
+    }
+
+    /* THEME BACKGROUNDS */
+    body.theme-dark { background: radial-gradient(1200px 700px at 20% -10%, rgba(56,189,248,0.12), transparent), radial-gradient(1000px 600px at 120% 110%, rgba(167,139,250,0.10), transparent), #0f172a; }
+    body.theme-light{ background: linear-gradient(180deg, #f1f5f9, #ffffff); --text:#0f172a; --muted:#475569; --accent:#0284c7; --accent2:#7c3aed; --accent3:#db2777; }
+    body.theme-sunset{ background: radial-gradient(1200px 700px at 0% 0%, rgba(248,113,113,0.18), transparent), radial-gradient(1000px 600px at 100% 100%, rgba(251,191,36,0.14), transparent), #0b1020; --accent:#fb7185; --accent2:#f59e0b; --accent3:#f472b6; }
+    body.theme-mint{ background: radial-gradient(1200px 700px at 0% 0%, rgba(34,197,94,0.15), transparent), radial-gradient(1000px 600px at 100% 100%, rgba(45,212,191,0.18), transparent), #0a1a18; --accent:#34d399; --accent2:#22d3ee; --accent3:#86efac; }
+    body.theme-grape{ background: radial-gradient(1200px 700px at 0% 0%, rgba(180,83,9,0.18), transparent), radial-gradient(1000px 600px at 100% 100%, rgba(139,92,246,0.18), transparent), #14091f; --accent:#a78bfa; --accent2:#f59e0b; --accent3:#c084fc; }
+    body.theme-candy{ background: radial-gradient(1200px 700px at 0% 0%, rgba(236,72,153,0.18), transparent), radial-gradient(1000px 600px at 100% 100%, rgba(59,130,246,0.18), transparent), #101224; --accent:#f472b6; --accent2:#60a5fa; --accent3:#facc15; }
+  </style>
+</head>
+<body class="theme-dark">
+  <div class="balloons" id="balloons"></div>
+  <div class="wrap">
+    <div class="card">
+      <h1 class="title"><span class="dot"></span><span id="pageTitle">Message</span></h1>
+      <div class="count" id="bigCount">—</div>
+      <p class="sub" id="smallTimer">—</p>
+      <div class="message" id="msg">Have a Happy Life Kuruppe 👻</div>
+      <div class="meta" id="meta">
+        <div>Expires: <code id="deadlineText">—</code></div>
+        <div id="viewsWrap">View: <a class="btn" id="toggleView" href="#">toggle</a></div>
+      </div>
+      <div class="footer" id="footer">Time for Biriyani 🍛</div>
+    </div>
+  </div>
+
+  <script>
+    const Q = new URLSearchParams(location.search);
+
+    // ---- Theming ----
+    const THEMES = {
+      dark:   { class: 'theme-dark',  balloons: ['#38bdf8','#a78bfa','#f472b6','#22d3ee'] },
+      light:  { class: 'theme-light', balloons: ['#0284c7','#7c3aed','#db2777','#16a34a'] },
+      sunset: { class: 'theme-sunset',balloons: ['#fb7185','#f59e0b','#f472b6','#fcd34d'] },
+      mint:   { class: 'theme-mint',  balloons: ['#34d399','#22d3ee','#86efac','#2dd4bf'] },
+      grape:  { class: 'theme-grape', balloons: ['#a78bfa','#f59e0b','#c084fc','#f472b6'] },
+      candy:  { class: 'theme-candy', balloons: ['#f472b6','#60a5fa','#facc15','#34d399'] },
+    };
+    const themeKey = (Q.get('theme')||'candy').toLowerCase();
+    const theme = THEMES[themeKey] || THEMES.candy;
+    document.body.className = theme.class;
+
+    // Page title & message
+    const title = Q.get('title') || 'Message';
+    document.getElementById('pageTitle').textContent = title;
+
+    const message = (Q.get('msg') || '').replace(/\+/g, ' ') || ' ';
+    document.getElementById('msg').textContent = message;
+
+    // Deadline: prefer exact timestamp, else days=X, else default 96 days if none
+    let deadline;
+    if(Q.has('expires')){
+      const d = new Date(Q.get('expires'));
+      if(!isNaN(d)) deadline = d;
+    }
+    if(!deadline && Q.has('days')){
+      const n = parseFloat(Q.get('days'));
+      if(!isNaN(n)) deadline = new Date(Date.now() + n*86400000);
+    }
+    if(!deadline){
+      // deadline = new Date(Date.now() + 96*86400000); // default requested: 96 days
+      deadline = new Date("2026-02-08T12:17:00+05:30");
+    }
+
+    const viewDefault = (Q.get('view')||'days').toLowerCase();
+    let viewMode = (viewDefault === 'dhms') ? 'dhms' : 'days';
+
+    // const fmtDate = new Intl.DateTimeFormat(undefined, { dateStyle: 'full', timeStyle: 'long' })
+    const fmtDate = new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Kolkata',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+    function parts(){
+      const ms = Math.max(0, deadline - Date.now());
+      const s = Math.floor(ms/1000);
+      return {
+        ms, s,
+        days: Math.floor(s/86400),
+        hours: Math.floor((s%86400)/3600),
+        minutes: Math.floor((s%3600)/60),
+        seconds: s%60
+      };
+    }
+
+    function render(){
+      const p = parts();
+      if(viewMode === 'days'){
+        const label = p.days === 1 ? 'day' : 'days';
+        document.getElementById('bigCount').textContent = `${p.days} ${label} left`;
+        document.getElementById('smallTimer').textContent = `${String(p.hours).padStart(2,'0')}:${String(p.minutes).padStart(2,'0')}:${String(p.seconds).padStart(2,'0')} remaining today`;
+      } else {
+        document.getElementById('bigCount').textContent = `${String(p.days).padStart(2,'0')}:${String(p.hours).padStart(2,'0')}:${String(p.minutes).padStart(2,'0')}:${String(p.seconds).padStart(2,'0')}`;
+        document.getElementById('smallTimer').textContent = `until expiry`;
+      }
+      document.getElementById('deadlineText').textContent = fmtDate.format(deadline);
+      if(p.ms <= 0){
+        document.getElementById('bigCount').textContent = 'Expired';
+        document.getElementById('smallTimer').textContent = '';
+        document.getElementById('footer').textContent = 'This link has expired.';
+        clearInterval(tick);
+      }
+    }
+
+    const toggleBtn = document.getElementById('toggleView');
+    toggleBtn.addEventListener('click', e=>{ e.preventDefault(); viewMode = viewMode==='days'?'dhms':'days'; render(); });
+
+    const tick = setInterval(render, 1000); render();
+    setInterval(()=>{ const p = parts(); document.title = `${p.days} day${p.days===1?'':'s'} left`; }, 1000);
+
+    // ---- Balloons ----
+    const balloonsEnabled = Q.get('balloons') !== '0';
+    const balloonLayer = document.getElementById('balloons');
+
+    function spawnBalloon(){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      const color = theme.balloons[Math.floor(Math.random()*theme.balloons.length)];
+      b.style.color = color;
+      b.style.background = color;
+      const size = 36 + Math.random()*34; // 36-70px width
+      b.style.width = size + 'px';
+      b.style.height = (size*1.25) + 'px';
+      const left = Math.random()*100; // vw
+      b.style.left = `calc(${left}vw - ${size/2}px)`;
+      const drift = (Math.random()*60-30) + 'px';
+      b.style.setProperty('--drift', drift);
+      b.style.animationDuration = (12 + Math.random()*10) + 's';
+      b.style.animationDelay = (Math.random()*5) + 's';
+
+      const s = document.createElement('div');
+      s.className = 'string';
+      s.style.background = color;
+      b.appendChild(s);
+
+      balloonLayer.appendChild(b);
+      b.addEventListener('animationend', ()=> b.remove());
+    }
+
+    if(balloonsEnabled){
+      // Initial burst
+      for(let i=0;i<16;i++) spawnBalloon();
+      // Continuous gentle stream
+      setInterval(()=>{ for(let i=0;i<3;i++) spawnBalloon(); }, 1500);
+    }
+  </script>
+</body>
+</html>
